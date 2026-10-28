@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>/* arm the opening sequence before first paint; never leave content hidden if the main script fails */
+(function(r){try{if(!matchMedia('(prefers-reduced-motion: reduce)').matches){r.classList.add('intro');
+setTimeout(function(){if(!r.classList.contains('play'))r.classList.remove('intro')},2500)}}catch(e){}})(document.documentElement);</script>
+<title>Alock — Data infrastructure for the AI age</title>
+<meta name="description" content="Turn any website into structured, AI-ready knowledge.">
+<style>
+/* ---------- Embedded fonts (Instrument Sans, latin subset) ---------- */
+@font-face{font-family:"Instrument Sans";font-weight:400;font-style:normal;font-display:block;src:url(asset/font-9a91efaa3599a6ef.woff2) format("woff2")}
+@font-face{font-family:"Instrument Sans";font-weight:500;font-style:normal;font-display:block;src:url(asset/font-9d3547da16d950d1.woff2) format("woff2")}
+@font-face{font-family:"Instrument Sans";font-weight:600;font-style:normal;font-display:block;src:url(asset/font-efb770916eda95a0.woff2) format("woff2")}
+
+/* ---------- Design tokens (sampled from the reference) ---------- */
+:root{
+  --bg:#0e0e0e;
+  --line:rgba(255,255,255,.075);
+  --line-2:rgba(255,255,255,.06);
+  --node:#272727;
+  --pink:#ff0466;
+  --cta-top:#fd0178;
+  --cta-bot:#d40152;
+  --text:#ffffff;
+  --text-2:#8c8c8c;   /* subtitle */
+  --text-3:#7a7a7a;   /* trusted-by */
+  --text-4:#5a5a5a;   /* idle tabs */
+  --logo:#aaaaaa;
+  --font:"Instrument Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  /* runtime (set by layout engine) */
+  --s:1; --W:1449; --H:1086; --dx:0px; --dy:0px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:geometricPrecision}
+body{overflow:hidden}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit;color:inherit;background:none;border:0;outline:0}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* film grain over everything (matches the subtle noise in the reference) */
+.grain{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.05;mix-blend-mode:screen;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* =====================================================================
+   MODE A — "Canvas" (desktop / laptop / landscape tablet)
+   The 1449×1086 reference is rendered in design units and scaled by --s.
+   The canvas is ELASTIC: when the viewport is taller than 4:3 the extra
+   height is absorbed by the frame (grid rows), when wider it is absorbed
+   by extra grid columns. Content keeps exact proportions, and there is
+   never blank space above/below or beside the design.
+   ===================================================================== */
+.viewport{position:fixed;inset:0;overflow:hidden}
+.stage{position:absolute;left:0;top:0;width:calc(var(--W)*1px);height:calc(var(--H)*1px);transform:scale(var(--s));transform-origin:0 0}
+#frame{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+.layer{position:absolute;left:var(--dx);top:0;width:1449px;height:1086px;pointer-events:none}
+.layer>*{pointer-events:auto}
+.g-mid{transform-origin:724.5px 206px;transform:translateY(var(--heroY,0px)) scale(var(--c,1))}
+.brand,.dots.l{translate:calc(var(--p,0px)*-1) 0}
+.btn-ghost,.dots.r{translate:var(--p,0px) 0}
+.logo{translate:var(--lx,0px) 0}
+
+/* --- header --- */
+.brand{position:absolute;left:102px;top:42px;display:flex;align-items:center;gap:0}
+.brand svg{display:block;width:34px;height:34px}
+.brand-name{position:absolute;left:44px;top:1.5px;font-size:27px;font-weight:600;letter-spacing:-.035em;line-height:34px;white-space:nowrap;
+  background:linear-gradient(90deg,#fff 0,#fff 26px,#c9c9c9 34px,#a9a9a9 70px);-webkit-background-clip:text;background-clip:text;color:transparent}
+.nav{position:absolute;left:490px;top:51px;display:flex;gap:48.5px;font-size:16px;font-weight:500;letter-spacing:-.025em;line-height:16px}
+.nav a{transition:color .2s;white-space:nowrap}
+.nav a:hover{color:#ff4b9b}
+.btn-ghost{position:absolute;left:1224.5px;top:36px;width:122px;height:43px;border-radius:8px;
+  background:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,.024));
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;padding-top:1px;font-size:14px;font-weight:500;letter-spacing:-.03em;white-space:nowrap;transition:background .2s}
+.btn-ghost::before,.panel::before,.tabs::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.btn-ghost::before{background:linear-gradient(180deg,rgba(255,255,255,.1),rgba(255,255,255,.075) 50%,rgba(255,255,255,.035))}
+.panel::before{background:linear-gradient(180deg,rgba(255,255,255,.065),rgba(255,255,255,.045) 50%,rgba(255,255,255,.03))}
+.tabs::before{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.028))}
+.btn-ghost:hover{background:rgba(255,255,255,.06)}
+.menu-btn{display:none}
+
+/* dot matrices under the top corners */
+.dots{position:absolute;top:135px;width:190px;height:200px;pointer-events:none;
+  background-image:radial-gradient(circle at center,rgba(255,255,255,.3) 0 1px,transparent 1.5px);
+  background-size:8.5px 8.5px}
+.dots.l{left:114px;background-position:0 0;
+  -webkit-mask-image:radial-gradient(ellipse 165px 185px at 0 0,#000 0,rgba(0,0,0,.8) 30%,rgba(0,0,0,.3) 65%,transparent 100%);
+          mask-image:radial-gradient(ellipse 165px 185px at 0 0,#000 0,rgba(0,0,0,.8) 30%,rgba(0,0,0,.3) 65%,transparent 100%)}
+.dots.r{left:1145px;background-position:right 0 top 0;
+  -webkit-mask-image:radial-gradient(ellipse 165px 185px at 100% 0,#000 0,rgba(0,0,0,.8) 30%,rgba(0,0,0,.3) 65%,transparent 100%);
+          mask-image:radial-gradient(ellipse 165px 185px at 100% 0,#000 0,rgba(0,0,0,.8) 30%,rgba(0,0,0,.3) 65%,transparent 100%)}
+
+/* --- hero --- */
+.h1{position:absolute;left:0;width:1449px;top:206.4px;text-align:center;font-size:65.5px;line-height:64px;font-weight:400;letter-spacing:-0.047em;
+  text-shadow:0 0 18px rgba(255,255,255,.13),0 0 3px rgba(255,255,255,.12)}
+.h1 .l1,.h1 .l2{display:block}.h1 .l1{transform:translateX(-3px)}.h1 .l2{transform:translateX(1.5px);letter-spacing:-.052em}
+.h1 .cur{display:inline-block;animation:blink var(--blink) steps(1) infinite}
+html.typing .h1 .cur{animation:none}
+@keyframes blink{50%{opacity:0}}
+.sub{position:absolute;left:0;width:1449px;top:362px;text-align:center;font-size:18.5px;line-height:20px;letter-spacing:-0.0315em;color:var(--text-2)}
+
+/* --- glass card (3 nested surfaces + input + toolbar) --- */
+.shell{position:absolute;left:377px;top:395px;width:694px;height:298.5px;border-radius:31px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,0) 40%,rgba(255,255,255,.012) 100%)}
+.shell::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;
+  background:linear-gradient(180deg,rgba(255,255,255,0) 22%,rgba(255,255,255,.075) 52%,rgba(255,255,255,.07) 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.panel{position:absolute;left:417.5px;top:431px;width:613.5px;height:224px;border-radius:17px;
+  background:linear-gradient(180deg,rgba(255,255,255,.004),rgba(255,255,255,.008));
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+.field{position:absolute;left:16px;top:16px;width:581.5px;height:124px;border-radius:11px;
+  background:linear-gradient(180deg,rgba(255,255,255,.04) 0%,rgba(255,255,255,.028) 50%,rgba(255,255,255,.016) 100%);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.field::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.065) 40%,rgba(255,255,255,.055));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.field svg{position:absolute;left:16px;top:17.5px;width:19px;height:19px}
+.field input{position:absolute;left:49px;top:15px;right:16px;height:24px;font-size:16px;letter-spacing:-.02em;color:#d9d9d9}
+.field input::placeholder{color:#8f8f8f;opacity:1}
+.tabs{position:absolute;left:16px;top:164.5px;width:287px;height:43px;border-radius:10px;
+  background:rgba(255,255,255,.004)}
+.tab{position:absolute;top:5.5px;height:31.5px;border-radius:7px;text-align:left;font-size:13px;font-weight:500;letter-spacing:-0.055em;color:var(--text-4);line-height:31.5px;cursor:pointer;transition:color .2s}
+.tab:hover{color:#bdbdbd}
+.tab[aria-selected=true]{color:#fff;background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.022));
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.06),inset 0 1px 0 rgba(255,255,255,.06),0 1px 2px rgba(0,0,0,.4)}
+.cta{position:absolute;left:474.5px;top:164px;width:123px;height:43.5px;border-radius:8px;cursor:pointer;
+  background:linear-gradient(180deg,var(--cta-top) 0%,#ef0168 50%,var(--cta-bot) 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -1px 0 rgba(0,0,0,.1),0 4px 14px -8px rgba(255,4,102,.3);
+  font-size:14px;font-weight:500;letter-spacing:-0.035em;color:#fff;transition:filter .2s,transform .2s}
+.cta:hover{filter:brightness(1.08)}
+.cta:active{transform:translateY(1px)}
+
+/* --- footer --- */
+.trusted{position:absolute;left:0;width:1449px;top:var(--trTop,919px);text-align:center;font-size:18px;line-height:20px;letter-spacing:-.025em;color:var(--text-3)}
+.logos{position:absolute;left:0;top:0;width:1449px;height:1086px;pointer-events:none}
+.logo{position:absolute;top:var(--lgTop,993px);height:29px;display:flex;align-items:center;color:var(--logo);
+  filter:drop-shadow(0 0 6px rgba(255,255,255,.12))}
+.logo svg{display:block;flex:none}
+.logo span{font-size:20.5px;font-weight:600;letter-spacing:-.045em;line-height:29px;white-space:nowrap}
+
+/* =====================================================================
+   MODE B — "Flow" (phones, portrait tablets, very short landscape)
+   Same DOM, reflowed. Fills 100svh exactly (no gaps), scrolls if needed.
+   ===================================================================== */
+html.flow body{overflow:auto}
+html.flow .viewport{position:relative;inset:auto;min-height:100vh;min-height:100svh;overflow:hidden}
+html.flow .stage{position:relative;transform:none;width:auto;height:auto;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;
+  padding:0 var(--gut);--gut:clamp(16px,5vw,40px)}
+html.flow #frame{display:none}
+html.flow .brand,html.flow .dots,html.flow .btn-ghost,html.flow .logo{translate:none}
+html.flow .layer{position:relative;left:auto;top:auto;width:auto;height:auto;transform:none;pointer-events:auto}
+html.flow .layer *{position:relative;left:auto!important;top:auto!important}
+html.flow .layer .sr{position:absolute!important}
+
+/* flow frame: two rails + pink nodes, built with pseudo-elements */
+html.flow .stage::before,html.flow .stage::after{content:"";position:absolute;top:0;bottom:0;width:1px;background:var(--line);pointer-events:none}
+html.flow .stage::before{left:calc(var(--gut)/2)}
+html.flow .stage::after{right:calc(var(--gut)/2)}
+
+html.flow .g-top{display:flex;align-items:center;justify-content:space-between;height:72px;border-bottom:1px solid var(--line);margin:0 calc(var(--gut)*-1);padding:0 var(--gut)}
+html.flow .brand{gap:10px}
+html.flow .brand svg{width:28px;height:28px}
+html.flow .brand-name{position:relative;left:auto;top:auto;font-size:23px;line-height:28px}
+html.flow .nav{position:absolute!important;top:72px!important;left:0!important;right:0;display:none;flex-direction:column;gap:0;z-index:20;
+  background:rgba(14,14,14,.86);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);padding:6px var(--gut) 14px}
+html.flow .nav a{padding:14px 0;font-size:17px;border-bottom:1px solid rgba(255,255,255,.05)}
+html.flow .nav a:last-child{border-bottom:0}
+html.flow.menu-open .nav{display:flex}
+html.flow .g-top{position:relative}
+html.flow .head-r{display:flex;align-items:center;gap:10px}
+html.flow .btn-ghost{width:auto;height:40px;padding:0 16px;font-size:14px}
+html.flow .menu-btn{display:grid;place-items:center;width:40px;height:40px;border-radius:8px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.09);cursor:pointer}
+html.flow .menu-btn i{display:block;width:16px;height:1.5px;background:#fff;box-shadow:0 -5px 0 #fff,0 5px 0 #fff;transition:.2s}
+html.flow.menu-open .menu-btn i{box-shadow:none;transform:rotate(45deg)}
+html.flow.menu-open .menu-btn i::after{content:"";display:block;width:16px;height:1.5px;background:#fff;transform:rotate(90deg)}
+html.flow .dots{display:block;position:absolute!important;top:73px!important;width:34vw;height:26vh;max-width:190px;max-height:200px}
+html.flow .dots.l{left:calc(var(--gut)/2 + 1px)!important}
+html.flow .dots.r{left:auto!important;right:calc(var(--gut)/2 + 1px)}
+
+html.flow .g-mid{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:clamp(24px,5.5vh,72px) 0 0;text-align:center}
+html.flow .g-mid::before,html.flow .g-mid::after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;top:-5px;pointer-events:none;
+  background:radial-gradient(circle,#fff 0 1.2px,#ff4aa6 2px,rgba(255,10,122,.55) 3px,rgba(255,10,122,0) 4.5px);box-shadow:0 0 14px 4px rgba(255,10,122,.55)}
+html.flow .g-mid::before{left:calc(var(--gut)/-2 - 4px)}
+html.flow .g-mid::after{right:calc(var(--gut)/-2 - 4px)}
+html.flow .h1{width:auto;font-size:clamp(32px,min(9.4vw,10.5vh),66px);line-height:1.05;letter-spacing:-.045em}
+html.flow .sub{width:auto;font-size:clamp(15px,4.1vw,18.5px);line-height:1.45;margin-top:clamp(12px,2.2vh,22px);max-width:34ch}
+@media (min-width:600px){html.flow .sub{max-width:none}}
+html.flow .card{width:100%;max-width:640px;margin-top:clamp(24px,4.2vh,48px);position:relative}
+html.flow .shell{position:absolute!important;inset:-14px -14px -22px -14px;width:auto;height:auto;left:-14px!important;top:-14px!important}
+html.flow .panel{width:100%;height:auto;padding:14px;display:flex;flex-direction:column;gap:14px;text-align:left}
+html.flow .field{width:100%;height:clamp(76px,13vh,124px)}
+html.flow .field svg{position:absolute!important;left:16px!important;top:17.5px!important}
+html.flow .field input{position:absolute!important;left:49px!important;top:15px!important}
+html.flow .tb{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+html.flow .tabs{width:auto;height:43px;display:flex;gap:2px;padding:5.5px 4px;overflow-x:auto;scrollbar-width:none}
+html.flow .tab{top:auto!important;left:auto!important;padding:0 14px;flex:none;width:auto!important}
+html.flow .cta{width:auto;padding:0 22px;height:43.5px}
+@media (max-width:480px){html.flow .tabs,html.flow .cta{width:100%!important}html.flow .tabs{justify-content:space-between}}
+html.flow .cnode{position:absolute!important;left:50%!important;top:35.7%!important;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:radial-gradient(circle,#fff 0 1.2px,#ff4aa6 2px,rgba(255,4,102,.55) 3px,rgba(255,4,102,0) 4.5px);box-shadow:0 0 14px 4px rgba(255,4,102,.5)}
+html.flow .conn{display:block;position:relative;width:100%;max-width:300px;height:56px;margin-top:22px}
+
+html.flow .g-bot{border-top:1px solid var(--line);margin:0 calc(var(--gut)*-1);padding:clamp(18px,3.4vh,40px) var(--gut) clamp(18px,3.4vh,36px);text-align:center}
+html.flow .g-bot::before,html.flow .g-bot::after{content:"";position:absolute;width:9px;height:9px;border-radius:50%;top:-5px;pointer-events:none;
+  background:radial-gradient(circle,#fff 0 1.2px,#ff4aa6 2px,rgba(255,10,122,.55) 3px,rgba(255,10,122,0) 4.5px);box-shadow:0 0 14px 4px rgba(255,10,122,.55)}
+html.flow .g-bot::before{left:calc(var(--gut)/2 - 4px)}
+html.flow .g-bot::after{right:calc(var(--gut)/2 - 4px)}
+html.flow .trusted{width:auto;font-size:clamp(14px,3.8vw,18px)}
+html.flow .logos{width:auto;height:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 8px;margin-top:clamp(12px,2.4vh,30px);justify-items:center}
+@media (min-width:560px){html.flow .logos{grid-template-columns:repeat(3,minmax(0,1fr));gap:18px 12px}}
+html.flow .logo{transform:scale(.82);transform-origin:center}
+@media (min-width:700px){html.flow .logo{transform:none}}
+.conn{display:none}
+
+/* =====================================================================
+   MOTION — opening sequence + continuous signal pulses
+   Timings sampled from the reference recording (30 fps); t = 0 is the
+   first typed character. All values live here for easy tuning.
+   ===================================================================== */
+:root{
+  --blink:.54s;                       /* cursor: ~8 frames on / 8 off           */
+  --t-nav:.27s; --t-logo:.33s; --t-btn:.47s;     /* header rises in           */
+  --t-sub:.30s; --d-sub:.55s;         /* subtitle left→right wipe              */
+  --t-card:.36s; --d-card:.62s;       /* card de-blurs in                      */
+  --t-port:.57s;                      /* hex + bottom port nodes appear        */
+  --t-trust:.82s;                     /* "Trusted by" rises                    */
+  --t-hex:1.13s;                      /* chevrons draw: rail → bend → tip → card */
+  --t-bot:1.45s;                      /* bottom port: node → card / columns    */
+  --t-logos:1.35s; --stag-logo:.20s;  /* partner logos, left → right           */
+  --ease-out:cubic-bezier(.22,.8,.26,1);
+  --ease-io:cubic-bezier(.55,.1,.35,1);
+}
+/* pre-play: only the animated pieces are hidden, and only while the intro is armed */
+html.intro:not(.play) :is(.h1,.brand,.nav,.btn-ghost,.sub,.shell,.panel,.trusted,.logo,.conn,.menu-btn){opacity:0}
+
+@media (prefers-reduced-motion:no-preference){
+  html.play:not(.settled) .nav{animation:hdrIn .6s var(--ease-out) var(--t-nav) both}
+  html.play.flow:not(.settled) .nav{animation:none}
+  html.play:not(.settled) .brand{animation:hdrIn .6s var(--ease-out) var(--t-logo) both}
+  html.play:not(.settled) :is(.btn-ghost,.menu-btn){animation:hdrIn .6s var(--ease-out) var(--t-btn) both}
+  html.play:not(.settled) .sub{-webkit-mask-image:linear-gradient(90deg,#000 40%,transparent 60%);mask-image:linear-gradient(90deg,#000 40%,transparent 60%);
+    -webkit-mask-size:250% 100%;mask-size:250% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;
+    animation:wipe var(--d-sub) linear var(--t-sub) both}
+  html.play:not(.settled) :is(.shell,.panel){animation:deblur var(--d-card) var(--ease-out) var(--t-card) both}
+  html.play:not(.settled) .trusted{animation:riseClip .32s var(--ease-out) var(--t-trust) both}
+  html.play:not(.settled) .logo{animation:logoIn .6s var(--ease-out) calc(var(--t-logos) + var(--i,0) * var(--stag-logo)) both}
+  html.play:not(.settled) .conn{animation:fade .4s ease-out var(--t-bot) both}
+
+  /* SVG circuitry. --el = seconds since play began, so a frame redraw (resize)
+     mid-sequence resumes at the right moment instead of restarting. */
+  html.play #frame .dr{stroke-dasharray:1;animation:draw var(--dd) var(--ease-io) calc(var(--dl) - var(--el,0s)) both}
+  #frame .d1{--dl:var(--t-hex);--dd:.17s}
+  #frame .d2{--dl:calc(var(--t-hex) + .17s);--dd:.16s}
+  #frame .d3{--dl:calc(var(--t-hex) + .33s);--dd:.2s}
+  #frame .b1{--dl:var(--t-bot);--dd:.2s}
+  #frame .b2{--dl:calc(var(--t-bot) + .18s);--dd:.22s}
+  html.play #frame .port{animation:fade .35s ease-out calc(var(--t-port) - var(--el,0s)) both}
+  html.play #frame .flares{display:none}
+  html.play #frame .pulses{display:inline;animation:fade .25s linear calc(var(--pv) - var(--el,0s)) both}
+}
+#frame .pulses{display:none}
+#frame .ph{--pv:calc(var(--t-hex) + .2s)}
+#frame .pb{--pv:calc(var(--t-bot) + .25s)}
+/* a white data packet travelling along the pink trace toward the card */
+#frame .pulse{fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round;stroke-dasharray:var(--dash) 200;
+  animation:packet var(--dur) linear calc(var(--pd) - var(--el,0s)) infinite}
+@keyframes packet{0%{stroke-dashoffset:0;opacity:0}5%{opacity:1}92%{opacity:1}100%{stroke-dashoffset:-100;opacity:0}}
+@keyframes draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes fade{from{opacity:0}}
+@keyframes hdrIn{from{opacity:0;transform:translateY(27px);filter:blur(4px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes wipe{from{-webkit-mask-position:100% 0;mask-position:100% 0}to{-webkit-mask-position:0 0;mask-position:0 0}}
+@keyframes deblur{from{opacity:0;filter:blur(14px)}to{opacity:1;filter:blur(0)}}
+@keyframes riseClip{from{opacity:0;transform:translateY(8px);clip-path:inset(0 0 100% 0)}to{opacity:1;transform:none;clip-path:inset(0)}}
+@keyframes logoIn{from{opacity:0;filter:blur(8px) drop-shadow(0 0 6px rgba(255,255,255,0))}to{opacity:1;filter:blur(0) drop-shadow(0 0 6px rgba(255,255,255,.12))}}
+@media (prefers-reduced-motion:reduce){.h1 .cur{animation:none}}
+html.flow .h1 .l1,html.flow .h1 .l2{min-height:1.05em}   /* reserve both lines while typing */
+</style>
+</head>
+<body>
+<div class="viewport" id="viewport">
+  <div class="stage" id="stage">
+    <svg id="frame" aria-hidden="true"></svg>
+
+    <!-- ===== top layer: header ===== -->
+    <header class="layer g-top">
+      <a class="brand" href="#" aria-label="Alock home">
+        <svg viewBox="0 0 34 34" aria-hidden="true">
+          <rect x="0" y="0" width="8.5" height="8.5" fill="#fff" fill-opacity=".955"/>
+          <rect x="17" y="0" width="8.5" height="8.5" fill="#fff" fill-opacity=".626"/>
+          <rect x="8.5" y="8.5" width="8.5" height="8.5" fill="#fff" fill-opacity=".61"/>
+          <rect x="17" y="8.5" width="8.5" height="8.5" fill="#fff" fill-opacity=".506"/>
+          <rect x="25.5" y="8.5" width="8.5" height="8.5" fill="#fff" fill-opacity=".365"/>
+          <rect x="0" y="17" width="8.5" height="8.5" fill="#fff" fill-opacity=".6"/>
+          <rect x="8.5" y="17" width="8.5" height="8.5" fill="#fff" fill-opacity=".494"/>
+          <rect x="17" y="17" width="8.5" height="8.5" fill="#fff" fill-opacity=".34"/>
+          <rect x="25.5" y="17" width="8.5" height="8.5" fill="#fff" fill-opacity=".187"/>
+          <rect x="8.5" y="25.5" width="8.5" height="8.5" fill="#fff" fill-opacity=".353"/>
+          <rect x="17" y="25.5" width="8.5" height="8.5" fill="#fff" fill-opacity=".154"/>
+        </svg>
+        <span class="brand-name">Alock</span>
+      </a>
+      <nav class="nav" id="nav" aria-label="Primary">
+        <a href="#">Product</a><a href="#">Docs</a><a href="#">Pricing</a><a href="#">Resources</a><a href="#">Contact</a>
+      </nav>
+      <div class="head-r">
+        <a class="btn-ghost" href="#">Get Started</a>
+        <button class="menu-btn" id="menuBtn" aria-label="Open menu" aria-controls="nav" aria-expanded="false"><i></i></button>
+      </div>
+      <div class="dots l" aria-hidden="true"></div>
+      <div class="dots r" aria-hidden="true"></div>
+    </header>
+
+    <!-- ===== middle layer: hero ===== -->
+    <main class="layer g-mid">
+      <h1 class="h1" aria-label="Data infrastructure for the AI age"><span class="l1" aria-hidden="true">Data infrastructure</span><span class="l2" aria-hidden="true">for the AI age<span class="cur">_</span></span></h1>
+      <p class="sub">Turn any website into structured, AI-ready knowledge</p>
+      <form class="card" onsubmit="return false">
+        <div class="shell" aria-hidden="true"></div>
+        <div class="panel">
+          <label class="field">
+            <span class="sr">Website URL</span>
+            <svg viewBox="0 0 20 20" fill="none" stroke="#a1a1a1" stroke-width="1.35" aria-hidden="true">
+              <circle cx="10" cy="10" r="8.1"/><ellipse cx="10" cy="10" rx="3.6" ry="8.1"/><path d="M2 10h16"/>
+            </svg>
+            <input type="url" placeholder="https://example.com" autocomplete="url" spellcheck="false">
+          </label>
+          <div class="tb">
+            <div class="tabs" role="tablist" aria-label="Mode">
+              <button type="button" class="tab" role="tab" aria-selected="true"  style="left:4px;width:66px;padding-left:13.5px">Extract</button>
+              <button type="button" class="tab" role="tab" aria-selected="false" style="left:72px;width:70px;padding-left:14.5px">Discover</button>
+              <button type="button" class="tab" role="tab" aria-selected="false" style="left:147px;width:72px;padding-left:14.5px">Visualize</button>
+              <button type="button" class="tab" role="tab" aria-selected="false" style="left:222px;width:58px;padding-left:14.5px">Crawl</button>
+            </div>
+            <button type="submit" class="cta">Get Started</button>
+          </div>
+        </div>
+      </form>
+      <div class="conn" aria-hidden="true"><svg viewBox="0 0 300 56" preserveAspectRatio="none" style="display:block;width:100%;height:100%">
+        <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff0466" stop-opacity=".1"/><stop offset=".35" stop-color="#ff0466"/><stop offset="1" stop-color="#ff0466" stop-opacity=".1"/></linearGradient></defs>
+        <path d="M150 0V20M150 20L30 44V56M150 20L270 44V56" stroke="url(#cg)" stroke-width="1.2" fill="none" vector-effect="non-scaling-stroke"/>
+      </svg><i class="cnode"></i></div>
+    </main>
+
+    <!-- ===== bottom layer: social proof ===== -->
+    <footer class="layer g-bot">
+      <p class="trusted">Trusted by worldwide company</p>
+      <div class="logos">
+        <div class="logo" style="left:152px;--i:0">
+          <svg width="31" height="29" viewBox="0 0 31 29" aria-hidden="true"><circle cx="8.3" cy="16.2" r="7.3" fill="currentColor" fill-opacity=".55"/><circle cx="19.6" cy="13.9" r="10" fill="currentColor"/></svg>
+          <span style="margin-left:4px;letter-spacing:-.72px">CloudWatch</span>
+        </div>
+        <div class="logo" style="left:371px;--i:1">
+          <svg width="25" height="29" viewBox="0 0 25 29" aria-hidden="true">
+            <path d="M12 1 23.5 7.6v13.3L12 27.6.5 20.9V7.6z" fill="currentColor"/>
+            <path d="M12 1 23.5 7.6 12 14.2.5 7.6z" fill="#fff" fill-opacity=".25"/>
+            <path d="M.5 7.6 12 14.2v13.4L.5 20.9z" fill="#000" fill-opacity=".12"/>
+            <path d="M12.2 9.3 18.6 13v.1L24 10v9l-5.4-3.1-6.4 3.7-4.3-2.5v-4.9z" fill="#0e0e0e"/>
+          </svg>
+          <span style="margin-left:5px;letter-spacing:-1.42px">Calescence</span>
+        </div>
+        <div class="logo" style="left:572px;--i:2">
+          <svg width="27" height="29" viewBox="0 0 27 29" aria-hidden="true"><circle cx="8" cy="9.2" r="7.7" fill="currentColor" fill-opacity=".62"/><circle cx="17.3" cy="19.1" r="8.6" fill="currentColor" fill-opacity=".9"/></svg>
+          <span style="margin-left:6px;letter-spacing:-1.78px">Capsule</span>
+        </div>
+        <div class="logo" style="left:742px;--i:3">
+          <svg width="28" height="29" viewBox="0 0 28 29" aria-hidden="true"><defs><clipPath id="cc"><circle cx="13.7" cy="14.5" r="13.6"/></clipPath></defs>
+            <g clip-path="url(#cc)"><rect width="28" height="29" fill="currentColor"/>
+            <g stroke="#0e0e0e" stroke-width="2.2"><path d="M-2 9 17-4M-2 15.5 23 -1.5M1 21 28 3M6 25.5 31 8.5"/></g></g></svg>
+          <span style="margin-left:6px;letter-spacing:-1.74px">Chromatools</span>
+        </div>
+        <div class="logo" style="left:953px;--i:4">
+          <svg width="27" height="29" viewBox="0 0 27 29" aria-hidden="true"><path d="M10 1h6.6v9.4h9.4V18h-9.4v10H10V18H.5v-7.6H10z" fill="currentColor" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/></svg>
+          <span style="margin-left:5px;letter-spacing:-1.19px">Clandestine</span>
+        </div>
+        <div class="logo" style="left:1161px;--i:5">
+          <svg width="27" height="29" viewBox="0 0 27 29" aria-hidden="true"><path d="M2 1h9a2 2 0 0 1 2 2v8.5h8a2 2 0 0 1 2 2V15h1a2 2 0 0 1 2 2v9.5a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2V17.5H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2z" fill="currentColor"/><path d="M13 11.5h8a2 2 0 0 1 2 2V15H15a2 2 0 0 0-2 2z" fill="#0e0e0e" fill-opacity=".35"/></svg>
+          <span style="margin-left:7px;letter-spacing:-.62px">Codecraft_</span>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+<div class="grain" aria-hidden="true"></div>
+
+<script>
+(function(){
+  "use strict";
+  var BW=1449, BH=1086;                 // reference artboard
+  var root=document.documentElement, stage=document.getElementById('stage'), svg=document.getElementById('frame');
+  var NS='http://www.w3.org/2000/svg', playStart=null;
+  var COLS=[235.5,357.5,480,602,724,846,968.5,1090.5,1213];   // measured grid columns
+  var STEP_X=122.25, STEP_Y=116.8;
+
+  /* ---------- layout engine ----------
+     The reference is a 1449×1086 artboard. Everything is solved in design units
+     and the whole stage is then scaled by s.
+       • 4:3 viewport  → exact reference (c = 1, no stretch).
+       • wider (16:9+) → vertical gaps tighten, the hero block grows by c (up to 1.3×),
+                         the side rails move outward (p) so the hex ports clear the
+                         bigger card, and the grid columns between them stretch by fx.
+       • taller        → extra height goes into the gaps above/below the hero.
+  ----------------------------------------------------------------------------------- */
+  var HERO_TOP=206, HERO_H=487, FOOT_H=250.5, HEAD_H=134.5;
+  var lerp=function(a,b,t){return a+(b-a)*t}, clamp=function(v,a,b){return Math.max(a,Math.min(b,v))};
+  var logos=[].slice.call(document.querySelectorAll('.logo'));
+  function solve(vw,vh){
+    var s,W,H;
+    if(vw/vh >= BW/BH){ s=vh/BH; H=BH; W=vw/s; } else { s=vw/BW; W=BW; H=vh/s; }
+    var dx=(W-BW)/2;
+    var t=clamp((vw/vh-BW/BH)/(16/9-BW/BH),0,1);           // 0 at 4:3 → 1 at 16:9
+    var fF=lerp(1,.9,t);                                   // footer band tightening
+    var G1min=lerp(71.5,40,t), G2min=lerp(142,92,t);
+    var avail=H-HEAD_H-FOOT_H*fF;
+    var cMax=Math.max(lerp(1,1.3,t),1+Math.min(.12,(H-BH)/BH*.6));   // also grow a little on taller-than-4:3 screens
+    var pMax=Math.max(0,dx+113-64);                        // rails stay ≥64u from the edge
+    var cW=(pMax+541.5)/524;                               // hex/card clearance limit
+    var c=Math.max(1,Math.min(cMax,(avail-G1min-G2min)/HERO_H,cW));
+    var spare=Math.max(0,avail-HERO_H*c-G1min-G2min);
+    var G1=G1min+spare*.5;
+    var p=clamp(Math.max(524*c-541.5,dx*.35*t),0,pMax);
+    return {s:s,W:W,H:H,dx:dx,t:t,c:c,fF:fF,G1:G1,p:p,fx:(1223+2*p)/1223};
+  }
+  function layout(){
+    var vw=window.innerWidth, vh=window.innerHeight, L=solve(vw,vh);
+    var flow = vw<900 || L.s<0.56 || L.H/BH>1.42;
+    root.classList.toggle('flow',flow);
+    if(flow){ ['--p','--lx'].forEach(function(k){root.style.setProperty(k,'0px')}); return; }
+    root.classList.remove('menu-open');
+    var heroTop=HEAD_H+L.G1, heroBot=heroTop+HERO_H*L.c, yB=L.H-FOOT_H*L.fF;
+    var R=root.style;
+    R.setProperty('--s',L.s); R.setProperty('--W',L.W); R.setProperty('--H',L.H);
+    R.setProperty('--dx',L.dx+'px'); R.setProperty('--p',L.p+'px');
+    R.setProperty('--heroY',(heroTop-HERO_TOP)+'px'); R.setProperty('--c',L.c);
+    R.setProperty('--trTop',(yB+83.5*L.fF)+'px'); R.setProperty('--lgTop',(yB+157.5*L.fF)+'px');
+    logos.forEach(function(el){ var cx=parseFloat(el.style.left)+el.offsetWidth/2; el.style.setProperty('--lx',((cx-724.5)*(L.fx-1))+'px'); });
+    drawFrame(L,heroTop,heroBot,yB);
+  }
+
+  /* ---------- SVG frame (grid, rails, nodes, pink circuitry) ---------- */
+  function drawFrame(Lo,heroTop,heroBot,yB){
+    var W=Lo.W,H=Lo.H,dx=Lo.dx,c=Lo.c,fF=Lo.fF,fx=Lo.fx,o=[];
+    var r2=function(v){return +v.toFixed(2)};
+    var X=function(x){return r2(dx+724.5+(x-724.5)*fx)};          // stretched grid x
+    var Yh=function(y){return r2(heroTop+(y-HERO_TOP)*c)};          // hero-relative y
+    var Yf=function(y){return r2(yB+(y-835.5)*fF)};                 // footer-relative y
+    var L=function(d){o.push('<path d="'+d+'" class="ln"/>')};
+    var sq=function(x,y){o.push('<rect class="sq" x="'+r2(x-3)+'" y="'+r2(y-3)+'" width="6" height="6"/>')};
+    var gid=0;
+    // pl: pink trace, gradient strong at (x1,y1). cls → draw-on class; rev → draw from (x2,y2)
+    function pl(x1,y1,x2,y2,a1,a2,w,cls,rev){
+      var id='g'+(gid++);
+      o.push('<linearGradient id="'+id+'" gradientUnits="userSpaceOnUse" x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'"><stop offset="0" stop-color="#ff0466" stop-opacity="'+a1+'"/><stop offset="1" stop-color="#ff0466" stop-opacity="'+a2+'"/></linearGradient>');
+      var d=rev?'M'+x2+' '+y2+'L'+x1+' '+y1:'M'+x1+' '+y1+'L'+x2+' '+y2;
+      o.push('<path d="'+d+'" stroke="url(#'+id+')" stroke-width="'+(w||1.25)+'" fill="none"'+(cls?' class="dr '+cls+'" pathLength="1"':'')+'/>');
+    }
+    function node(x,y,big,port){
+      var r=big?16:15, f=big?20:22;
+      if(port) o.push('<g class="port">');
+      o.push('<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="url(#glow)"/>');
+      o.push('<ellipse cx="'+x+'" cy="'+y+'" rx="'+f+'" ry="1.9" fill="url(#fl)" opacity=".8"/>');
+      o.push('<ellipse cx="'+x+'" cy="'+y+'" rx="1.9" ry="'+f+'" fill="url(#fl)" opacity=".8"/>');
+      o.push('<circle cx="'+x+'" cy="'+y+'" r="1.7" fill="#ffc6e2"/>');
+      if(port) o.push('</g>');
+    }
+    var flares=[], pulses={ph:[],pb:[]};
+    // packet route: polyline points, speed (design units/s), start offset (s, relative to play)
+    function route(group,pts,speed,start){
+      var len=0; for(var i=1;i<pts.length;i++) len+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);
+      len=r2(len); var dur=r2(len/speed);
+      // pathLength 100 → the keyframes stay constant; --dash is the 18-unit packet expressed in that scale
+      pulses[group].push('<path class="pulse" pathLength="100" style="--dash:'+r2(1800/len)+';--dur:'+dur+'s;--pd:'+start+'s" d="M'+pts.map(function(q){return q[0]+' '+q[1]}).join('L')+'"/>');
+    }
+    function flare(x1,y1,x2,y2){
+      var id='f'+(gid++);
+      o.push('<linearGradient id="'+id+'" gradientUnits="userSpaceOnUse" x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>');
+      flares.push('<path d="M'+x1+' '+y1+'L'+x2+' '+y2+'" stroke="url(#'+id+')" stroke-width="1.4"/>');
+    }
+    o.push('<defs><radialGradient id="glow"><stop offset="0" stop-color="#ffd0e6"/><stop offset=".12" stop-color="#ff3d8f"/><stop offset=".32" stop-color="#ff0466" stop-opacity=".62"/><stop offset=".62" stop-color="#ff0466" stop-opacity=".2"/><stop offset="1" stop-color="#ff0466" stop-opacity="0"/></radialGradient>'+
+      '<pattern id="hatch" patternUnits="userSpaceOnUse" width="6.1" height="6.1" patternTransform="rotate(45)"><path d="M0 0V6.1" stroke="rgba(255,255,255,.2)" stroke-width="1.1"/></pattern><radialGradient id="fl"><stop offset="0" stop-color="#ff2a80"/><stop offset=".45" stop-color="#ff0466" stop-opacity=".55"/><stop offset="1" stop-color="#ff0466" stop-opacity="0"/></radialGradient></defs>');
+    o.push('<style>.ln{stroke:rgba(255,255,255,.075);stroke-width:1;fill:none}.sq{fill:#262626}</style>');
+
+    var LR=X(113), RR=X(1336), yT=134.5;
+    var f881=Yf(881.5), f952=Yf(952.5), f1063=Yf(1063.5);
+
+    L('M0.5 0V'+H); L('M'+r2(W-0.5)+' 0V'+H);
+    L('M0 17.5H'+X(235.5)+'L'+X(357.5)+' 86.5H'+X(1090.5)+'L'+X(1213)+' 17.5H'+W);
+    L('M'+X(235.5)+' 17.5V'+yT); L('M'+X(1213)+' 17.5V'+yT);
+    [357.5,480,602,724,846,968.5,1090.5].forEach(function(q){L('M'+X(q)+' 86.5V'+yT)});
+    L('M0 '+yT+'H'+W); L('M0 '+yB+'H'+W);
+    L('M'+LR+' '+yT+'V'+H); L('M'+RR+' '+yT+'V'+H);
+    for(var k=1;LR-k*STEP_X>24;k++){ var cx=r2(LR-k*STEP_X), cx2=r2(RR+k*STEP_X);
+      L('M'+cx+' 17.5V'+f952); L('M'+cx2+' 17.5V'+f952); sq(cx,yT); sq(cx2,yT); sq(cx,yB); sq(cx2,yB); }
+
+    // hex ports: scaled by c about (rail, tip)
+    var tipY=Yh(543.5);
+    var HY=function(y){return r2(tipY+(y-543.5)*c)}, HXl=function(x){return r2(LR+(x-113)*c)}, HXr=function(x){return r2(RR-(x-113)*c)};
+    var hexTop=HY(451.5), hexBot=HY(640.5);
+    var low=r2(yB-118*fF);
+    var rows=[250.5,367.5];
+    for(var y=367.5+STEP_Y; y<hexTop-50; y+=STEP_Y) rows.push(r2(y));
+    for(var y2=low-STEP_Y; y2>hexBot+50; y2-=STEP_Y) rows.push(r2(y2));
+    if(low>hexBot+20) rows.push(low);
+    rows.forEach(function(r){ L('M0 '+r+'H'+LR); L('M'+RR+' '+r+'H'+W); sq(LR,r); sq(RR,r); });
+    COLS.forEach(function(q){ sq(X(q),yT); sq(X(q),yB); });
+
+    [357.5,480,602,724,846,968.5,1090.5].forEach(function(q){L('M'+X(q)+' '+yB+'V'+f881)});
+    L('M'+X(357.5)+' '+f881+'H'+X(1090.5));
+    L('M'+X(357.5)+' '+f881+'L'+X(235.5)+' '+f952+'H0');
+    L('M'+X(1090.5)+' '+f881+'L'+X(1213)+' '+f952+'H'+W);
+    L('M'+X(235.5)+' '+yB+'V'+f952); L('M'+X(1213)+' '+yB+'V'+f952);
+    L('M0 '+f1063+'H'+W);
+    o.push('<rect x="'+r2(LR-112)+'" y="'+f952+'" width="112" height="'+r2(f1063-f952)+'" fill="url(#hatch)"/>');
+    o.push('<rect x="'+RR+'" y="'+f952+'" width="112" height="'+r2(f1063-f952)+'" fill="url(#hatch)"/>');
+
+    var hexPts=[[113,451.5],[270.5,451.5],[324,546],[270.5,640.5],[113,640.5]];
+    L('M'+hexPts.map(function(q){return HXl(q[0])+' '+HY(q[1])}).join('L'));
+    L('M'+hexPts.map(function(q){return HXr(q[0])+' '+HY(q[1])}).join('L'));
+    [HXl,HXr].forEach(function(HX,i){
+      var a=HX(113), b=HX(256), tp=HX(289.5), y1=HY(485), y3=HY(603);
+      sq(a,y1); sq(a,y3);
+      pl(b,y1,a,y1,1,.12,1.6,'d1',true); pl(b,y3,a,y3,1,.12,1.6,'d1',true);
+      pl(tp,tipY,b,y1,1,1,1.5,'d2',true); pl(tp,tipY,b,y3,1,1,1.5,'d2',true);
+      var dir=i?-1:1, shellEdge=r2(dx+724.5-dir*347.5*c);
+      pl(tp,tipY,r2(tp+(shellEdge-tp)*.85+dir*10),tipY,1,0,2,'d3');
+      node(tp,tipY,true,true);
+      flare(tp+dir*5,tipY,tp+dir*27,tipY);
+      // packets enter at the rail, run the chevron, cross the tip and fade into the card.
+      // observed: first packet rides the lower trace (the draw-on head), the upper one follows ~0.8s later.
+      var conn=[r2(tp+(shellEdge-tp)*.9),tipY];
+      route('ph',[[a,y3],[b,y3],[tp,tipY],conn],90,-.29);
+      route('ph',[[a,y1],[b,y1],[tp,tipY],conn],90,.53);
+    });
+
+    // bottom port under the card (squeezes/stretches with the gap)
+    var G2=yB-heroBot, nx=r2(dx+724), ny=r2(heroBot+Math.min(52,G2*.37)), dy2=r2(heroBot+Math.min(85,G2*.6));
+    var lx=X(602), rx=X(846);
+    pl(nx,ny,nx,heroBot,1,.05,1.2,'b1');
+    pl(nx,ny,lx,dy2,1,.85,1.45,'b1'); pl(nx,ny,rx,dy2,1,.85,1.45,'b1');
+    pl(lx,dy2,lx,yB-8,.9,0,1.25,'b2'); pl(rx,dy2,rx,yB-8,.9,0,1.25,'b2');
+    node(nx,ny,true,true);
+    // packets climb a column, run the diagonal into the node, then up into the card (left first, right ~1s later)
+    route('pb',[[lx,yB-8],[lx,dy2],[nx,ny],[nx,heroBot]],80,-.19);
+    route('pb',[[rx,yB-8],[rx,dy2],[nx,ny],[nx,heroBot]],80,.88);
+    var sl=(dy2-ny)/(rx-nx);
+    flare(nx+22,ny+22*sl,nx+46,ny+46*sl);
+
+    var tail=Math.max(113,LR);
+    [[LR,yT,1],[RR,yT,-1]].forEach(function(n){ pl(n[0],n[1],n[0]-n[2]*tail,n[1],.9,.12,1.3); pl(n[0],n[1],n[0],n[1]+120,.75,0,1.3); pl(n[0],n[1],n[0]+n[2]*26,n[1],.5,0,1.3); node(n[0],n[1]); });
+    [[LR,yB,1],[RR,yB,-1]].forEach(function(n){ pl(n[0],n[1],n[0]-n[2]*tail,n[1],.9,.12,1.3); pl(n[0],n[1],n[0],n[1]-Math.min(120,yB-hexBot-10),.85,0,1.3); pl(n[0],n[1],n[0]+n[2]*26,n[1],.5,0,1.3); node(n[0],n[1]); });
+
+    o.push('<g class="flares">'+flares.join('')+'</g>');
+    o.push('<g class="pulses ph">'+pulses.ph.join('')+'</g><g class="pulses pb">'+pulses.pb.join('')+'</g>');
+    if(playStart!==null) svg.style.setProperty('--el',((performance.now()-playStart)/1000).toFixed(3)+'s');
+    svg.setAttribute('viewBox','0 0 '+W+' '+H);
+    svg.innerHTML=o.join('');
+  }
+
+  /* ---------- interactions ---------- */
+  var tabs=[].slice.call(document.querySelectorAll('.tab'));
+  tabs.forEach(function(t){ t.addEventListener('click',function(){ tabs.forEach(function(x){x.setAttribute('aria-selected',x===t?'true':'false')}); }); });
+  var mb=document.getElementById('menuBtn');
+  mb.addEventListener('click',function(){ var o=root.classList.toggle('menu-open'); mb.setAttribute('aria-expanded',o); });
+
+  var raf=0; function onResize(){ cancelAnimationFrame(raf); raf=requestAnimationFrame(layout); }
+  window.addEventListener('resize',onResize,{passive:true});
+  if(window.visualViewport) visualViewport.addEventListener('resize',onResize,{passive:true});
+  /* ---------- opening sequence ----------
+     typewriter headline (35 ms/char) → header, subtitle, card, ports, footer
+     are CSS-timed from the same t0 → URL placeholder types itself (56 ms/char). */
+  var TYPE_MS=35, PH_START=1470, PH_MS=42, SETTLE_AT=3200;
+  function intro(){
+    if(!root.classList.contains('intro') || root.classList.contains('play')) return;
+    var h1=document.querySelector('.h1'), l1=h1.querySelector('.l1'), l2=h1.querySelector('.l2'), cur=h1.querySelector('.cur');
+    var A=l1.textContent, B=l2.textContent.replace(/_$/,'');
+    var inp=document.querySelector('.field input'), PH=inp.getAttribute('placeholder');
+    var lastK=-1, lastP=-1, phDone=false;
+    function setHead(k){
+      var a=Math.min(k,A.length), b=Math.max(0,k-A.length);
+      l1.textContent=A.slice(0,a); l2.textContent=B.slice(0,b);
+      (k<=A.length?l1:l2).appendChild(cur);
+    }
+    function finishPH(){ if(!phDone){ phDone=true; inp.setAttribute('placeholder',PH); } }
+    inp.addEventListener('focus',finishPH); inp.addEventListener('input',finishPH);
+    setHead(0); inp.setAttribute('placeholder','');
+    playStart=performance.now();
+    svg.style.setProperty('--el','0s');
+    root.classList.add('typing','play');
+    (function tick(){
+      var t=performance.now()-playStart;
+      var k=Math.min(A.length+B.length,Math.floor(t/TYPE_MS)+1);
+      if(k!==lastK){ setHead(k); lastK=k; if(k===A.length+B.length) root.classList.remove('typing'); }
+      if(!phDone){ var p=Math.max(0,Math.min(PH.length,Math.floor((t-PH_START)/PH_MS)+1)); if(p!==lastP){ inp.setAttribute('placeholder',PH.slice(0,p)); lastP=p; if(p===PH.length) phDone=true; } }
+      if(t<SETTLE_AT) requestAnimationFrame(tick);
+      else { setHead(A.length+B.length); finishPH(); root.classList.remove('typing','intro'); root.classList.add('settled'); }
+    })();
+  }
+
+  layout();
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(layout);
+    Promise.race([document.fonts.ready,new Promise(function(r){setTimeout(r,300)})]).then(intro);
+  } else intro();
+})();
+</script>
+</body>
+</html>
